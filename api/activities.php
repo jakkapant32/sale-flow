@@ -43,7 +43,9 @@ function handleActivities($method, $id, $input) {
 
 function getActivities($input) {
     global $db;
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     
     $pagination = getPaginationParams($input);
@@ -154,7 +156,9 @@ function getActivity($id) {
 
 function createActivity($input) {
     global $db;
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     
     validateRequired($input, ['activity_type', 'subject']);

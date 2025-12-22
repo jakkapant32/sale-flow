@@ -19,7 +19,9 @@ function handleDashboard($method, $input) {
 
 function getDashboardStats($input) {
     global $db;
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     
     $period = isset($input['period']) ? sanitizeInput($input['period']) : 'year';

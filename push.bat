@@ -17,8 +17,16 @@ if "%TOKEN%"=="" (
 )
 
 echo.
+echo กำลังลบ credential cache เก่า...
+git credential-manager-core erase <<< protocol=https`nhost=github.com || git credential reject <<< protocol=https`nhost=github.com || echo "Clearing credentials..."
+
+echo.
+echo กำลังตั้งค่า remote URL...
+git remote set-url origin https://%TOKEN%@github.com/jakkapant32/sale-flow.git
+
+echo.
 echo กำลัง push ไปยัง GitHub...
-git push -u https://%TOKEN%@github.com/jakkapant32/sale-flow.git main
+git push -u origin main
 
 if %ERRORLEVEL% EQU 0 (
     echo.

@@ -6,7 +6,9 @@
 function handleAuth($method, $id, $input) {
     global $db;
     $db = getDB();
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     
     switch ($method) {
         case 'POST':

@@ -43,7 +43,9 @@ function handleOrders($method, $id, $input) {
 
 function getOrders($input) {
     global $db;
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     
     $pagination = getPaginationParams($input);
@@ -150,7 +152,9 @@ function getOrder($id) {
 
 function createOrder($input) {
     global $db;
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     
     validateRequired($input, ['customer_id', 'order_date', 'items']);

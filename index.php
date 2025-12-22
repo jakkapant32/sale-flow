@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (isset($_SESSION['user_id'])) {
     header('Location: dashboard.php');
     exit();
@@ -75,7 +77,7 @@ if (isset($_SESSION['user_id'])) {
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">ชื่อผู้ใช้ หรือ อีเมล</label>
-                    <input type="text" id="username" name="username" required>
+                    <input type="text" id="username" name="username" placeholder="กรอกชื่อผู้ใช้หรืออีเมล" required>
                 </div>
                 <div class="form-group">
                     <label for="password">รหัสผ่าน</label>
@@ -85,6 +87,9 @@ if (isset($_SESSION['user_id'])) {
             </form>
             <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
                 ยังไม่มีบัญชี? <a href="register.php" style="color: var(--accent-color);">สมัครสมาชิก</a>
+            </p>
+            <p style="text-align: center; margin-top: 0.5rem;">
+                <a href="home.php" style="color: var(--text-secondary); text-decoration: none;">← กลับหน้าแรก</a>
             </p>
         </div>
     </div>

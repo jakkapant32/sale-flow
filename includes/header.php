@@ -1,6 +1,11 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+// Only redirect if accessing protected pages
+$publicPages = ['index.php', 'register.php', 'home.php'];
+$currentPage = basename($_SERVER['PHP_SELF']);
+if (!isset($_SESSION['user_id']) && !in_array($currentPage, $publicPages)) {
     header('Location: index.php');
     exit();
 }
@@ -22,7 +27,7 @@ if (!isset($_SESSION['user_id'])) {
             <script>
                 function logout() {
                     fetch('api/auth/logout', { method: 'POST' })
-                        .then(() => window.location.href = 'index.php');
+                        .then(() => window.location.href = 'home.php');
                 }
             </script>
         </ul>

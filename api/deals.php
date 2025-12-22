@@ -43,7 +43,9 @@ function handleDeals($method, $id, $input) {
 
 function getDeals($input) {
     global $db;
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     
     $pagination = getPaginationParams($input);
@@ -155,7 +157,9 @@ function getDeal($id) {
 
 function createDeal($input) {
     global $db;
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $userId = $_SESSION['user_id'] ?? null;
     
     validateRequired($input, ['deal_name', 'customer_id', 'amount']);

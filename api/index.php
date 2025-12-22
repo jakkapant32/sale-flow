@@ -18,6 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/functions.php';
 
+// Start session once at the beginning
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Get request method and path
 $method = $_SERVER['REQUEST_METHOD'];
 

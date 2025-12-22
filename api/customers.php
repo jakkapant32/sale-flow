@@ -44,7 +44,9 @@ function handleCustomers($method, $id, $input) {
 function getCustomers($input) {
     global $db;
     if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE) {
         session_start();
+    }
     }
     $userId = $_SESSION['user_id'] ?? null;
     
@@ -141,7 +143,9 @@ function getCustomer($id) {
 function createCustomer($input) {
     global $db;
     if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE) {
         session_start();
+    }
     }
     $userId = $_SESSION['user_id'] ?? null;
     
