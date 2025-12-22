@@ -57,10 +57,37 @@
                     </div>
                     <div class="form-group">
                         <label>มูลค่า *</label>
-                        <input type="number" id="amount" step="0.01" required>
+                        <input type="number" id="amount" step="0.01" required onchange="updateDealCalculations()">
                     </div>
                 </div>
                 <div class="form-row">
+                    <div class="form-group">
+                        <label>อัตราค่าคอมมิชชั่น (%)</label>
+                        <input type="number" id="commissionRate" step="0.01" min="0" max="100" value="7" onchange="updateDealCalculations()">
+                        <small style="color: #666;">% ของมูลค่า</small>
+                    </div>
+                    <div class="form-group">
+                        <label>โอกาสสำเร็จ (%)</label>
+                        <input type="number" id="probability" min="0" max="100" value="0">
+                    </div>
+                </div>
+                
+                <!-- ส่วนแสดงผลการคำนวณ -->
+                <div class="card" style="margin-top: 1.5rem; background: #f8f9fa; border: 1px solid #e0e0e0;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: #333;">สรุปการคำนวณ</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div><strong>มูลค่าดีล:</strong></div>
+                        <div id="displayDealAmount" style="text-align: right; color: #2563eb; font-weight: 600;">฿0.00</div>
+                        
+                        <div><strong>ค่าคอมมิชชั่น (<span id="displayDealCommissionRate">7</span>%):</strong></div>
+                        <div id="displayDealCommissionAmount" style="text-align: right; color: #ef4444;">-฿0.00</div>
+                        
+                        <div style="border-top: 2px solid #ddd; padding-top: 0.5rem; margin-top: 0.5rem;"><strong>รายได้สุทธิ:</strong></div>
+                        <div id="displayDealNetIncome" style="text-align: right; font-size: 1.2rem; font-weight: bold; color: #10b981; border-top: 2px solid #ddd; padding-top: 0.5rem; margin-top: 0.5rem;">฿0.00</div>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-top: 1.5rem;">
                     <div class="form-group">
                         <label>ขั้นตอน</label>
                         <select id="stage">
@@ -70,10 +97,6 @@
                             <option value="negotiation">Negotiation</option>
                             <option value="closed">Closed</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label>โอกาสสำเร็จ (%)</label>
-                        <input type="number" id="probability" min="0" max="100" value="0">
                     </div>
                 </div>
                 <div class="form-row">
@@ -150,6 +173,8 @@
                             <th>ชื่อดีล</th>
                             <th>ลูกค้า</th>
                             <th>มูลค่า</th>
+                            <th>ค่าคอมมิชชั่น</th>
+                            <th>รายได้สุทธิ</th>
                             <th>ขั้นตอน</th>
                             <th>โอกาสสำเร็จ</th>
                             <th>สถานะ</th>
@@ -157,12 +182,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${deals.map(d => `
+                        ${deals.map(d => {
+                            const commissionRate = d.commission_rate || 7;
+                            const commissionAmount = d.commission_amount || 0;
+                            const netIncome = d.net_income !== null && d.net_income !== undefined ? d.net_income : (d.amount - commissionAmount);
+                            return `
                             <tr>
                                 <td>${d.deal_code || '-'}</td>
                                 <td>${d.deal_name}</td>
                                 <td>${d.customer_name || '-'}</td>
                                 <td>${formatCurrency(d.amount)}</td>
+                                <td>
+                                    <span style="color: #ef4444;">-${formatCurrency(commissionAmount)}</span>
+                                    <small style="color: #666;">(${commissionRate}%)</small>
+                                </td>
+                                <td><strong style="color: #10b981;">${formatCurrency(netIncome)}</strong></td>
                                 <td><span class="badge badge-info">${d.stage}</span></td>
                                 <td>${d.probability}%</td>
                                 <td><span class="badge badge-${d.status === 'open' ? 'success' : 'danger'}">${d.status}</span></td>
@@ -171,7 +205,8 @@
                                     <button class="btn-danger btn-small" onclick="deleteDeal('${d.id}')">ลบ</button>
                                 </td>
                             </tr>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </tbody>
                 </table>
             `;
@@ -192,16 +227,21 @@
                             document.getElementById('dealName').value = d.deal_name || '';
                             document.getElementById('customerId').value = d.customer_id || '';
                             document.getElementById('amount').value = d.amount || '';
+                            document.getElementById('commissionRate').value = d.commission_rate || 7;
                             document.getElementById('stage').value = d.stage || 'prospecting';
                             document.getElementById('probability').value = d.probability || 0;
                             document.getElementById('expectedCloseDate').value = d.expected_close_date || '';
                             document.getElementById('status').value = d.status || 'open';
                             document.getElementById('description').value = d.description || '';
                             document.getElementById('notes').value = d.notes || '';
+                            // คำนวณหลังจากโหลดข้อมูลเสร็จ
+                            setTimeout(updateDealCalculations, 100);
                         }
                     });
             } else {
                 document.getElementById('dealForm').reset();
+                document.getElementById('commissionRate').value = 7;
+                updateDealCalculations();
             }
         }
         
@@ -230,6 +270,20 @@
             }).format(amount);
         }
         
+        // ฟังก์ชันคำนวณและแสดงผลการคำนวณสำหรับ Deals
+        function updateDealCalculations() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const commissionRate = parseFloat(document.getElementById('commissionRate').value) || 0;
+            const commissionAmount = amount * (commissionRate / 100);
+            const netIncome = amount - commissionAmount;
+            
+            // แสดงผลการคำนวณ
+            document.getElementById('displayDealAmount').textContent = formatCurrency(amount);
+            document.getElementById('displayDealCommissionRate').textContent = commissionRate.toFixed(2);
+            document.getElementById('displayDealCommissionAmount').textContent = formatCurrency(-commissionAmount);
+            document.getElementById('displayDealNetIncome').textContent = formatCurrency(netIncome);
+        }
+        
         document.getElementById('dealForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('dealId').value;
@@ -237,6 +291,7 @@
                 deal_name: document.getElementById('dealName').value,
                 customer_id: document.getElementById('customerId').value,
                 amount: parseFloat(document.getElementById('amount').value),
+                commission_rate: parseFloat(document.getElementById('commissionRate').value) || 7,
                 stage: document.getElementById('stage').value,
                 probability: parseInt(document.getElementById('probability').value),
                 expected_close_date: document.getElementById('expectedCloseDate').value || null,

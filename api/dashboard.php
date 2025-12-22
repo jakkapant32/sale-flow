@@ -102,6 +102,24 @@ function getDashboardStats($input) {
     }
     $stats['total_revenue'] = floatval($stmt->fetch()['total']);
     
+    // Total commission
+    if ($userId) {
+        $stmt = $db->prepare("SELECT COALESCE(SUM(commission_amount), 0) as total FROM orders WHERE payment_status = 'paid' AND (created_by = :user_id OR created_by IS NULL)");
+        $stmt->execute(['user_id' => $userId]);
+    } else {
+        $stmt = $db->query("SELECT COALESCE(SUM(commission_amount), 0) as total FROM orders WHERE payment_status = 'paid'");
+    }
+    $stats['total_commission'] = floatval($stmt->fetch()['total']);
+    
+    // Total net income
+    if ($userId) {
+        $stmt = $db->prepare("SELECT COALESCE(SUM(net_income), 0) as total FROM orders WHERE payment_status = 'paid' AND (created_by = :user_id OR created_by IS NULL)");
+        $stmt->execute(['user_id' => $userId]);
+    } else {
+        $stmt = $db->query("SELECT COALESCE(SUM(net_income), 0) as total FROM orders WHERE payment_status = 'paid'");
+    }
+    $stats['total_net_income'] = floatval($stmt->fetch()['total']);
+    
     // Pending activities
     if ($userId) {
         $stmt = $db->prepare("SELECT COUNT(*) as total FROM activities WHERE status = 'pending' AND (assigned_to = :user_id OR assigned_to IS NULL)");

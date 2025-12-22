@@ -123,6 +123,8 @@
                 { title: 'ดีลที่เปิดอยู่', value: data.total_deals || 0, icon: 'fa-handshake', color: '#10b981' },
                 { title: 'มูลค่าดีลทั้งหมด', value: formatCurrency(data.total_deal_value || 0), icon: 'fa-dollar-sign', color: '#f59e0b' },
                 { title: 'รายได้ทั้งหมด', value: formatCurrency(data.total_revenue || 0), icon: 'fa-chart-line', color: '#2563eb' },
+                { title: 'ค่าคอมมิชชั่นรวม', value: formatCurrency(data.total_commission || 0), icon: 'fa-percent', color: '#ef4444' },
+                { title: 'รายได้สุทธิรวม', value: formatCurrency(data.total_net_income || 0), icon: 'fa-coins', color: '#10b981' },
                 { title: 'กิจกรรมค้าง', value: data.pending_activities || 0, icon: 'fa-calendar-check', color: '#8b5cf6' },
                 { title: 'กิจกรรมเกินกำหนด', value: data.overdue_activities || 0, icon: 'fa-exclamation-triangle', color: '#ef4444' }
             ];

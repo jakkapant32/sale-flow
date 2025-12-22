@@ -98,16 +98,48 @@
                 
                 <div class="form-row" style="margin-top: 2rem;">
                     <div class="form-group">
-                        <label>ภาษี</label>
-                        <input type="number" id="tax" step="0.01" value="0">
+                        <label>ส่วนลดรวม</label>
+                        <input type="number" id="discount" step="0.01" value="0" onchange="updateCalculations()">
                     </div>
                     <div class="form-group">
-                        <label>ส่วนลดรวม</label>
-                        <input type="number" id="discount" step="0.01" value="0">
+                        <label>อัตราภาษี (%)</label>
+                        <input type="number" id="taxRate" step="0.01" min="0" max="100" value="7" onchange="calculateTax()">
+                        <small style="color: #666;">% ของยอดรวมก่อนภาษี</small>
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ภาษี</label>
+                        <input type="number" id="tax" step="0.01" value="0" readonly style="background-color: #f5f5f5;">
+                        <small style="color: #666;">คำนวณอัตโนมัติจากอัตราภาษี</small>
+                    </div>
+                    <div class="form-group">
+                        <label>อัตราค่าคอมมิชชั่น (%)</label>
+                        <input type="number" id="commissionRate" step="0.01" min="0" max="100" value="7" onchange="updateCalculations()">
+                        <small style="color: #666;">% ของยอดรวม</small>
+                    </div>
+                </div>
+                
+                <!-- ส่วนแสดงผลการคำนวณ -->
+                <div class="card" style="margin-top: 1.5rem; background: #f8f9fa; border: 1px solid #e0e0e0;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: #333;">สรุปการคำนวณ</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div><strong>ยอดรวมทั้งหมด:</strong></div>
+                        <div id="displayTotalAmount" style="text-align: right; color: #2563eb; font-weight: 600;">฿0.00</div>
+                        
+                        <div><strong>ค่าคอมมิชชั่น (<span id="displayCommissionRate">7</span>%):</strong></div>
+                        <div id="displayCommissionAmount" style="text-align: right; color: #ef4444;">-฿0.00</div>
+                        
+                        <div><strong>ภาษี:</strong></div>
+                        <div id="displayTax" style="text-align: right; color: #ef4444;">-฿0.00</div>
+                        
+                        <div style="border-top: 2px solid #ddd; padding-top: 0.5rem; margin-top: 0.5rem;"><strong>รายได้สุทธิ:</strong></div>
+                        <div id="displayNetIncome" style="text-align: right; font-size: 1.2rem; font-weight: bold; color: #10b981; border-top: 2px solid #ddd; padding-top: 0.5rem; margin-top: 0.5rem;">฿0.00</div>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 1.5rem;">
                     <label>หมายเหตุ</label>
                     <textarea id="notes" rows="3"></textarea>
                 </div>
@@ -186,18 +218,29 @@
                             <th>ลูกค้า</th>
                             <th>วันที่สั่งซื้อ</th>
                             <th>ยอดรวม</th>
+                            <th>ค่าคอมมิชชั่น</th>
+                            <th>รายได้สุทธิ</th>
                             <th>สถานะ</th>
                             <th>สถานะการชำระ</th>
                             <th>จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${orders.map(o => `
+                        ${orders.map(o => {
+                            const commissionRate = o.commission_rate || 7;
+                            const commissionAmount = o.commission_amount || 0;
+                            const netIncome = o.net_income !== null && o.net_income !== undefined ? o.net_income : (o.total_amount - commissionAmount - (o.tax || 0));
+                            return `
                             <tr>
                                 <td>${o.order_number}</td>
                                 <td>${o.customer_name || '-'}</td>
                                 <td>${new Date(o.order_date).toLocaleDateString('th-TH')}</td>
                                 <td>${formatCurrency(o.total_amount)}</td>
+                                <td>
+                                    <span style="color: #ef4444;">-${formatCurrency(commissionAmount)}</span>
+                                    <small style="color: #666;">(${commissionRate}%)</small>
+                                </td>
+                                <td><strong style="color: #10b981;">${formatCurrency(netIncome)}</strong></td>
                                 <td><span class="badge badge-info">${o.status}</span></td>
                                 <td><span class="badge badge-${o.payment_status === 'paid' ? 'success' : 'warning'}">${o.payment_status === 'paid' ? 'ชำระแล้ว' : 'ยังไม่ชำระ'}</span></td>
                                 <td>
@@ -205,7 +248,8 @@
                                     <button class="btn-danger btn-small" onclick="deleteOrder('${o.id}')">ลบ</button>
                                 </td>
                             </tr>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </tbody>
                 </table>
             `;
@@ -256,6 +300,8 @@
             // Set default order date to today
             if (!id) {
                 document.getElementById('orderDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('commissionRate').value = 7;
+                document.getElementById('taxRate').value = 7;
             }
             
             if (id) {
@@ -270,6 +316,8 @@
                             document.getElementById('status').value = o.status || 'pending';
                             document.getElementById('tax').value = o.tax || 0;
                             document.getElementById('discount').value = o.discount || 0;
+                            document.getElementById('commissionRate').value = o.commission_rate || 7;
+                            document.getElementById('taxRate').value = o.tax_rate || 7;
                             document.getElementById('notes').value = o.notes || '';
                             
                             // Load order items
@@ -286,12 +334,20 @@
                                 });
                             }
                             updateProductSelects();
+                            // คำนวณหลังจากโหลดข้อมูลเสร็จ
+                            setTimeout(() => {
+                                calculateTax();
+                                updateCalculations();
+                            }, 100);
                         }
                     });
             } else {
                 document.getElementById('orderForm').reset();
                 document.getElementById('orderItems').innerHTML = '';
+                document.getElementById('commissionRate').value = 7;
+                document.getElementById('taxRate').value = 7;
                 addOrderItem();
+                updateCalculations();
             }
         }
         
@@ -320,13 +376,65 @@
             }).format(amount);
         }
         
+        // ฟังก์ชันคำนวณ subtotal
+        function calculateSubtotal() {
+            let subtotal = 0;
+            document.querySelectorAll('.order-item').forEach(itemEl => {
+                const quantity = parseFloat(itemEl.querySelector('.item-quantity').value) || 0;
+                const unitPrice = parseFloat(itemEl.querySelector('.item-price').value) || 0;
+                const discount = parseFloat(itemEl.querySelector('.item-discount').value) || 0;
+                subtotal += (quantity * unitPrice) - discount;
+            });
+            return subtotal;
+        }
+        
+        // ฟังก์ชันคำนวณภาษี
+        function calculateTax() {
+            const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+            const subtotal = calculateSubtotal();
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const tax = (subtotal - discount) * (taxRate / 100);
+            document.getElementById('tax').value = tax.toFixed(2);
+            updateCalculations();
+        }
+        
+        // ฟังก์ชันคำนวณและแสดงผลการคำนวณ
+        function updateCalculations() {
+            const subtotal = calculateSubtotal();
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const tax = parseFloat(document.getElementById('tax').value) || 0;
+            const total = subtotal + tax - discount;
+            
+            const commissionRate = parseFloat(document.getElementById('commissionRate').value) || 0;
+            const commissionAmount = total * (commissionRate / 100);
+            const netIncome = total - commissionAmount - tax;
+            
+            // แสดงผลการคำนวณ
+            document.getElementById('displayTotalAmount').textContent = formatCurrency(total);
+            document.getElementById('displayCommissionRate').textContent = commissionRate.toFixed(2);
+            document.getElementById('displayCommissionAmount').textContent = formatCurrency(-commissionAmount);
+            document.getElementById('displayTax').textContent = formatCurrency(-tax);
+            document.getElementById('displayNetIncome').textContent = formatCurrency(netIncome);
+        }
+        
         // Auto-fill price when product is selected
         document.addEventListener('change', (e) => {
             if (e.target.classList.contains('item-product')) {
                 const option = e.target.options[e.target.selectedIndex];
                 if (option.dataset.price) {
                     e.target.closest('.order-item').querySelector('.item-price').value = option.dataset.price;
+                    updateCalculations();
                 }
+            }
+        });
+        
+        // เมื่อมีการเปลี่ยนแปลงรายการสินค้า
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('item-quantity') || 
+                e.target.classList.contains('item-price') || 
+                e.target.classList.contains('item-discount')) {
+                calculateTax();
+                updateCalculations();
             }
         });
         
@@ -358,6 +466,8 @@
                 status: document.getElementById('status').value,
                 tax: parseFloat(document.getElementById('tax').value) || 0,
                 discount: parseFloat(document.getElementById('discount').value) || 0,
+                commission_rate: parseFloat(document.getElementById('commissionRate').value) || 7,
+                tax_rate: parseFloat(document.getElementById('taxRate').value) || 7,
                 notes: document.getElementById('notes').value,
                 items: items
             };

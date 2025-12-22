@@ -164,12 +164,27 @@ function createDeal($input) {
     
     validateRequired($input, ['deal_name', 'customer_id', 'amount']);
     
+    $amount = floatval($input['amount']);
+    
+    // คำนวณค่าคอมมิชชั่น (รับ commission_rate จาก input หรือใช้ default 7%)
+    $commissionRate = isset($input['commission_rate']) ? floatval($input['commission_rate']) : 7.00;
+    if ($commissionRate < 0 || $commissionRate > 100) {
+        sendError('Commission rate must be between 0 and 100', 400);
+    }
+    $commissionAmount = $amount * ($commissionRate / 100);
+    
+    // คำนวณรายได้สุทธิ = มูลค่า - ค่าคอมมิชชั่น (deals ไม่มี tax)
+    $netIncome = $amount - $commissionAmount;
+    
     $data = [
         'deal_code' => generateCode('DEAL', $db, 'deals', 'deal_code'),
         'deal_name' => sanitizeInput($input['deal_name']),
         'customer_id' => $input['customer_id'],
         'product_id' => !empty($input['product_id']) ? $input['product_id'] : null,
-        'amount' => floatval($input['amount']),
+        'amount' => $amount,
+        'commission_rate' => $commissionRate,
+        'commission_amount' => $commissionAmount,
+        'net_income' => $netIncome,
         'currency' => sanitizeInput($input['currency'] ?? 'THB'),
         'stage' => sanitizeInput($input['stage'] ?? 'prospecting'),
         'probability' => isset($input['probability']) ? intval($input['probability']) : 0,
@@ -208,7 +223,7 @@ function updateDeal($id, $input) {
         sendError('Deal not found', 404);
     }
     
-    $allowedFields = ['deal_name', 'customer_id', 'product_id', 'amount', 'currency', 'stage',
+    $allowedFields = ['deal_name', 'customer_id', 'product_id', 'amount', 'commission_rate', 'currency', 'stage',
                      'probability', 'expected_close_date', 'actual_close_date', 'status',
                      'assigned_to', 'description', 'notes'];
     
@@ -219,6 +234,12 @@ function updateDeal($id, $input) {
         if (isset($input[$field])) {
             if ($field === 'amount') {
                 $params[$field] = floatval($input[$field]);
+            } elseif ($field === 'commission_rate') {
+                $val = floatval($input[$field]);
+                if ($val < 0 || $val > 100) {
+                    sendError('Commission rate must be between 0 and 100', 400);
+                }
+                $params[$field] = $val;
             } elseif ($field === 'probability') {
                 $val = intval($input[$field]);
                 if ($val < 0 || $val > 100) {
@@ -234,6 +255,30 @@ function updateDeal($id, $input) {
             }
             $updates[] = "$field = :$field";
         }
+    }
+    
+    // คำนวณ commission_amount และ net_income ใหม่ถ้ามีการเปลี่ยนแปลง amount หรือ commission_rate
+    $needRecalc = isset($input['amount']) || isset($input['commission_rate']);
+    
+    if ($needRecalc) {
+        $dealStmt = $db->prepare("SELECT amount, commission_rate FROM deals WHERE id = :id");
+        $dealStmt->execute(['id' => $id]);
+        $existingDeal = $dealStmt->fetch();
+        
+        $amount = isset($input['amount']) ? floatval($input['amount']) : $existingDeal['amount'];
+        $commissionRate = isset($input['commission_rate']) ? floatval($input['commission_rate']) : ($existingDeal['commission_rate'] ?? 7.00);
+        
+        if ($commissionRate < 0 || $commissionRate > 100) {
+            sendError('Commission rate must be between 0 and 100', 400);
+        }
+        
+        $commissionAmount = $amount * ($commissionRate / 100);
+        $netIncome = $amount - $commissionAmount;
+        
+        $updates[] = "commission_amount = :commission_amount";
+        $updates[] = "net_income = :net_income";
+        $params['commission_amount'] = $commissionAmount;
+        $params['net_income'] = $netIncome;
     }
     
     if (empty($updates)) {

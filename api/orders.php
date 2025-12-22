@@ -177,9 +177,27 @@ function createOrder($input) {
             $subtotal += ($itemTotal - $discount);
         }
         
-        $tax = isset($input['tax']) ? floatval($input['tax']) : 0;
         $discount = isset($input['discount']) ? floatval($input['discount']) : 0;
+        
+        // คำนวณภาษี (ถ้ามี tax_rate หรือใช้ค่าที่กรอกมา)
+        $taxRate = isset($input['tax_rate']) ? floatval($input['tax_rate']) : 7.00;
+        $tax = isset($input['tax']) ? floatval($input['tax']) : 0;
+        if ($tax == 0 && $taxRate > 0) {
+            // ถ้าไม่ได้กรอก tax ให้คำนวณจาก subtotal - discount
+            $tax = ($subtotal - $discount) * ($taxRate / 100);
+        }
+        
         $total = $subtotal + $tax - $discount;
+        
+        // คำนวณค่าคอมมิชชั่น (รับ commission_rate จาก input หรือใช้ default 7%)
+        $commissionRate = isset($input['commission_rate']) ? floatval($input['commission_rate']) : 7.00;
+        if ($commissionRate < 0 || $commissionRate > 100) {
+            throw new Exception('Commission rate must be between 0 and 100');
+        }
+        $commissionAmount = $total * ($commissionRate / 100);
+        
+        // คำนวณรายได้สุทธิ = ยอดรวม - ค่าคอมมิชชั่น - ภาษี
+        $netIncome = $total - $commissionAmount - $tax;
         
         // Create order
         $orderData = [
@@ -193,6 +211,10 @@ function createOrder($input) {
             'tax' => $tax,
             'discount' => $discount,
             'total_amount' => $total,
+            'commission_rate' => $commissionRate,
+            'commission_amount' => $commissionAmount,
+            'net_income' => $netIncome,
+            'tax_rate' => $taxRate,
             'currency' => sanitizeInput($input['currency'] ?? 'THB'),
             'payment_status' => sanitizeInput($input['payment_status'] ?? 'unpaid'),
             'payment_method' => sanitizeInput($input['payment_method'] ?? ''),
@@ -252,7 +274,8 @@ function updateOrder($id, $input) {
     }
     
     $allowedFields = ['customer_id', 'deal_id', 'order_date', 'delivery_date', 'status',
-                     'tax', 'discount', 'currency', 'payment_status', 'payment_method', 'notes'];
+                     'tax', 'discount', 'tax_rate', 'commission_rate', 'currency', 
+                     'payment_status', 'payment_method', 'notes'];
     
     $updates = [];
     $params = ['id' => $id];
@@ -261,7 +284,7 @@ function updateOrder($id, $input) {
         if (isset($input[$field])) {
             if (in_array($field, ['customer_id', 'deal_id'])) {
                 $params[$field] = !empty($input[$field]) ? $input[$field] : null;
-            } elseif (in_array($field, ['tax', 'discount'])) {
+            } elseif (in_array($field, ['tax', 'discount', 'tax_rate', 'commission_rate'])) {
                 $params[$field] = floatval($input[$field]);
             } elseif (in_array($field, ['order_date', 'delivery_date'])) {
                 $params[$field] = !empty($input[$field]) ? $input[$field] : null;
@@ -272,18 +295,45 @@ function updateOrder($id, $input) {
         }
     }
     
-    // Recalculate total if subtotal, tax, or discount changed
-    if (isset($input['tax']) || isset($input['discount'])) {
-        $orderStmt = $db->prepare("SELECT subtotal FROM orders WHERE id = :id");
+    // คำนวณ total_amount, commission_amount และ net_income ใหม่ถ้ามีการเปลี่ยนแปลง
+    $needRecalc = isset($input['tax']) || isset($input['discount']) || 
+                  isset($input['commission_rate']) || isset($input['tax_rate']);
+    
+    if ($needRecalc) {
+        $orderStmt = $db->prepare("SELECT subtotal, tax, discount, total_amount, commission_rate, tax_rate FROM orders WHERE id = :id");
         $orderStmt->execute(['id' => $id]);
         $order = $orderStmt->fetch();
         
-        $tax = isset($input['tax']) ? floatval($input['tax']) : $order['subtotal'] * 0.07;
-        $discount = isset($input['discount']) ? floatval($input['discount']) : 0;
-        $total = $order['subtotal'] + $tax - $discount;
+        $subtotal = $order['subtotal'];
+        $discount = isset($input['discount']) ? floatval($input['discount']) : $order['discount'];
+        
+        // คำนวณภาษี
+        $taxRate = isset($input['tax_rate']) ? floatval($input['tax_rate']) : ($order['tax_rate'] ?? 7.00);
+        $tax = isset($input['tax']) ? floatval($input['tax']) : $order['tax'];
+        if (isset($input['tax_rate']) && $tax == 0) {
+            $tax = ($subtotal - $discount) * ($taxRate / 100);
+            $updates[] = "tax = :tax";
+            $params['tax'] = $tax;
+        }
+        
+        $total = $subtotal + $tax - $discount;
+        
+        // คำนวณ commission
+        $commissionRate = isset($input['commission_rate']) ? floatval($input['commission_rate']) : ($order['commission_rate'] ?? 7.00);
+        if ($commissionRate < 0 || $commissionRate > 100) {
+            sendError('Commission rate must be between 0 and 100', 400);
+        }
+        $commissionAmount = $total * ($commissionRate / 100);
+        
+        // คำนวณรายได้สุทธิ
+        $netIncome = $total - $commissionAmount - $tax;
         
         $updates[] = "total_amount = :total_amount";
+        $updates[] = "commission_amount = :commission_amount";
+        $updates[] = "net_income = :net_income";
         $params['total_amount'] = $total;
+        $params['commission_amount'] = $commissionAmount;
+        $params['net_income'] = $netIncome;
     }
     
     if (empty($updates)) {
