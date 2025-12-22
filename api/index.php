@@ -4,6 +4,11 @@
  * Handles all API requests
  */
 
+// Start session FIRST before any output
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
@@ -17,11 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/functions.php';
-
-// Start session once at the beginning
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // Get request method and path
 $method = $_SERVER['REQUEST_METHOD'];

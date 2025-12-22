@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (isset($_SESSION['user_id'])) {
     header('Location: dashboard.php');
     exit();
@@ -10,10 +12,10 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สมัครสมาชิก - SalesFlow</title>
+    <title>เข้าสู่ระบบ - SalesFlow</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <style>
-        .register-container {
+        .login-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -21,15 +23,15 @@ if (isset($_SESSION['user_id'])) {
             background: var(--gradient-primary);
             padding: 2rem;
         }
-        .register-box {
+        .login-box {
             background: white;
             padding: 3rem;
             border-radius: 1rem;
             box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 500px;
+            max-width: 400px;
         }
-        .register-box h1 {
+        .login-box h1 {
             text-align: center;
             color: var(--primary-color);
             margin-bottom: 2rem;
@@ -65,69 +67,48 @@ if (isset($_SESSION['user_id'])) {
         .error-message.show {
             display: block;
         }
-        .success-message {
-            background: #efe;
-            color: var(--success-color);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        .success-message.show {
-            display: block;
-        }
     </style>
 </head>
 <body>
-    <div class="register-container">
-        <div class="register-box">
-            <h1>สมัครสมาชิก</h1>
+    <div class="login-container">
+        <div class="login-box">
+            <h1>SalesFlow</h1>
             <div class="error-message" id="errorMessage"></div>
-            <div class="success-message" id="successMessage"></div>
-            <form id="registerForm">
+            <form id="loginForm">
                 <div class="form-group">
-                    <label for="username">ชื่อผู้ใช้</label>
-                    <input type="text" id="username" name="username" required>
+                    <label for="username">ชื่อผู้ใช้ หรือ อีเมล</label>
+                    <input type="text" id="username" name="username" placeholder="กรอกชื่อผู้ใช้หรืออีเมล" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">อีเมล</label>
-                    <input type="email" id="email" name="email" required>
+                    <label for="password">รหัสผ่าน</label>
+                    <input type="password" id="password" name="password" required>
                 </div>
-                <div class="form-group">
-                    <label for="full_name">ชื่อ-นามสกุล</label>
-                    <input type="text" id="full_name" name="full_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
-                    <input type="password" id="password" name="password" required minlength="6">
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">สมัครสมาชิก</button>
+                <button type="submit" class="btn-primary" style="width: 100%;">เข้าสู่ระบบ</button>
             </form>
             <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
-                มีบัญชีแล้ว? <a href="login.php" style="color: var(--accent-color);">เข้าสู่ระบบ</a>
+                ยังไม่มีบัญชี? <a href="register.php" style="color: var(--accent-color);">สมัครสมาชิก</a>
+            </p>
+            <p style="text-align: center; margin-top: 0.5rem;">
+                <a href="index.php" style="color: var(--text-secondary); text-decoration: none;">← กลับหน้าแรก</a>
             </p>
         </div>
     </div>
     <script>
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const errorDiv = document.getElementById('errorMessage');
-            const successDiv = document.getElementById('successMessage');
             errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
             
             const formData = {
                 username: document.getElementById('username').value,
-                email: document.getElementById('email').value,
-                full_name: document.getElementById('full_name').value,
                 password: document.getElementById('password').value
             };
             
             try {
                 // ใช้ absolute path เพื่อหลีกเลี่ยงปัญหา routing
                 const apiPath = window.location.pathname.includes('/SalesFlow/') 
-                    ? '/SalesFlow/api/auth/register' 
-                    : '/api/auth/register';
+                    ? '/SalesFlow/api/auth/login' 
+                    : '/api/auth/login';
                 const response = await fetch(apiPath, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -149,12 +130,8 @@ if (isset($_SESSION['user_id'])) {
                     return;
                 }
                 
-                if (response.ok) {
-                    successDiv.textContent = 'สมัครสมาชิกสำเร็จ! กำลังไปยังหน้าสั่งระบบ...';
-                    successDiv.classList.add('show');
-                    setTimeout(() => {
-                        window.location.href = 'index.php';
-                    }, 2000);
+                if (data.success) {
+                    window.location.href = 'dashboard.php';
                 } else {
                     errorDiv.textContent = data.error || 'เกิดข้อผิดพลาด';
                     errorDiv.classList.add('show');
