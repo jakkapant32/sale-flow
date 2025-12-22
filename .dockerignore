@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Database files
+database/*.sql
+database/*.bat
+
+# Scripts
+scripts/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
