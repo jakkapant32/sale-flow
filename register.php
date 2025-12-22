@@ -153,7 +153,7 @@ if (isset($_SESSION['user_id'])) {
                     successDiv.textContent = 'สมัครสมาชิกสำเร็จ! กำลังไปยังหน้าสั่งระบบ...';
                     successDiv.classList.add('show');
                     setTimeout(() => {
-                        window.location.href = 'index.php';
+                        window.location.href = 'login.php';
                     }, 2000);
                 } else {
                     errorDiv.textContent = data.error || 'เกิดข้อผิดพลาด';
