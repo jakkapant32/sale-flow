@@ -1,6 +1,6 @@
-# CRM Pro - ระบบ CRM สำหรับธุรกิจ
+# SalesFlow
 
-ระบบ CRM (Customer Relationship Management) ที่สมบูรณ์สำหรับจัดการลูกค้า, ดีล, กิจกรรม, สินค้า และคำสั่งซื้อ
+SalesFlow - CRM System for managing customers, deals, activities, products, and orders. Built with PHP and PostgreSQL.
 
 ## ฟีเจอร์หลัก
 
@@ -13,31 +13,32 @@
 
 ## ความต้องการของระบบ
 
-- PHP 7.4 หรือสูงกว่า
+- PHP 8.0 หรือสูงกว่า
 - PostgreSQL 12 หรือสูงกว่า
-- Apache Web Server (พร้อม mod_rewrite)
+- Apache Web Server (พร้อม mod_rewrite) หรือ Nginx
 - PDO PostgreSQL Extension
 
 ## การติดตั้ง
 
 ### 1. ติดตั้งฐานข้อมูล
 
-เชื่อมต่อกับฐานข้อมูล PostgreSQL บน Render.com และรันไฟล์ schema:
+เชื่อมต่อกับฐานข้อมูล PostgreSQL และรันไฟล์ schema:
 
 ```bash
-# ใช้ psql command ที่ให้มา
-PGPASSWORD=p0vTgAP02R8i8hKXjPF5uWpwDsE1nZr4 psql -h dpg-d51mhfggjchc73enlnfg-a.oregon-postgres.render.com -U smartsales_user smartsales_db_tp3c < database/schema.sql
+psql -h your-host -U your-user -d your-database < database/schema.sql
 ```
 
 หรือใช้ pgAdmin หรือเครื่องมือจัดการฐานข้อมูลอื่นๆ เพื่อรันไฟล์ `database/schema.sql`
 
 ### 2. ตั้งค่าไฟล์
 
-ไฟล์ `config/database.php` ได้ตั้งค่าการเชื่อมต่อฐานข้อมูลไว้แล้วตามข้อมูลที่ให้มา:
-- Host: dpg-d51mhfggjchc73enlnfg-a.oregon-postgres.render.com
-- Database: smartsales_db_tp3c
-- Username: smartsales_user
-- Password: p0vTgAP02R8i8hKXjPF5uWpwDsE1nZr4
+ไฟล์ `config/database.php` รองรับการอ่านจาก environment variables สำหรับ production หรือใช้ค่า default สำหรับ local development:
+
+**สำหรับ Production (Render.com):**
+- ตั้งค่า `DATABASE_URL` หรือตัวแปร `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` ใน Environment Variables
+
+**สำหรับ Local Development:**
+- แก้ไขค่าใน `config/database.php` โดยตรง
 
 ### 3. ตั้งค่า Web Server
 
@@ -54,7 +55,7 @@ location /api {
 }
 
 location ~ \.php$ {
-    fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+    fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
     fastcgi_index index.php;
     include fastcgi_params;
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
@@ -64,9 +65,11 @@ location ~ \.php$ {
 ### 4. เริ่มใช้งาน
 
 1. เปิดเบราว์เซอร์ไปที่ `http://your-domain/`
-2. สมัครสมาชิกใหม่หรือใช้บัญชี default:
-   - Username: `admin`
-   - Password: `admin123` (ควรเปลี่ยนทันทีหลังเข้าใช้งานครั้งแรก)
+2. สมัครสมาชิกใหม่หรือใช้บัญชีที่มีอยู่
+
+## การ Deploy บน Render.com
+
+ดูรายละเอียดการ deploy ได้ที่ [README_DEPLOY.md](README_DEPLOY.md)
 
 ## โครงสร้างโปรเจกต์
 
@@ -91,7 +94,7 @@ SalesFlow/
 ├── database/
 │   └── schema.sql         # Database schema
 ├── includes/
-│   └── header.php         # Common header/sidebar
+│   └── header.php         # Common header
 ├── index.php              # Login page
 ├── register.php           # Registration page
 ├── dashboard.php          # Dashboard page
@@ -101,6 +104,7 @@ SalesFlow/
 ├── products.php           # Products management
 ├── orders.php             # Orders management
 ├── .htaccess              # Apache rewrite rules
+├── render.yaml            # Render.com configuration
 └── README.md              # This file
 ```
 
@@ -149,6 +153,9 @@ SalesFlow/
 
 ### Dashboard
 - `GET /api/dashboard` - ดึงสถิติแดชบอร์ด
+- `GET /api/dashboard?period=year` - ดึงสถิติรายปี
+- `GET /api/dashboard?period=quarter` - ดึงสถิติรายไตรมาส
+- `GET /api/dashboard?period=month` - ดึงสถิติรายเดือน
 
 ## การใช้งาน
 
@@ -187,11 +194,12 @@ SalesFlow/
 - ควรเพิ่มการตรวจสอบสิทธิ์ที่เข้มงวดขึ้น
 - ควรใช้ prepared statements (ซึ่งระบบใช้อยู่แล้ว)
 - ควรตั้งค่า CORS ให้เหมาะสมสำหรับ production
+- อย่า hardcode credentials ใน code - ใช้ environment variables แทน
 
 ## การแก้ปัญหา
 
 ### ไม่สามารถเชื่อมต่อฐานข้อมูลได้
-- ตรวจสอบข้อมูลการเชื่อมต่อใน `config/database.php`
+- ตรวจสอบข้อมูลการเชื่อมต่อใน `config/database.php` หรือ Environment Variables
 - ตรวจสอบว่า PostgreSQL extension เปิดใช้งานใน PHP
 - ตรวจสอบว่าไฟร์วอลล์อนุญาตให้เชื่อมต่อฐานข้อมูล
 
@@ -212,4 +220,3 @@ SalesFlow/
 ## Support
 
 หากมีปัญหาหรือคำถาม กรุณาตรวจสอบ documentation หรือติดต่อทีมพัฒนา
-

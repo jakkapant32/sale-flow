@@ -1,0 +1,44 @@
+@echo off
+echo ========================================
+echo   Push SalesFlow to GitHub
+echo ========================================
+echo.
+echo ขั้นตอน:
+echo 1. สร้าง Personal Access Token ที่: https://github.com/settings/tokens
+echo 2. เลือก scope: repo
+echo 3. Copy token ที่ได้
+echo.
+set /p TOKEN="กรอก Token ที่ได้: "
+
+if "%TOKEN%"=="" (
+    echo Error: ต้องกรอก Token!
+    pause
+    exit /b 1
+)
+
+echo.
+echo กำลัง push ไปยัง GitHub...
+git push -u https://%TOKEN%@github.com/jakkapant32/sale-flow.git main
+
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo ========================================
+    echo   สำเร็จ! Code ถูก push ไป GitHub แล้ว
+    echo ========================================
+    echo.
+    echo Repository: https://github.com/jakkapant32/sale-flow
+    echo.
+) else (
+    echo.
+    echo ========================================
+    echo   Error: Push ไม่สำเร็จ
+    echo ========================================
+    echo.
+    echo ตรวจสอบว่า:
+    echo - Token ถูกต้องหรือไม่
+    echo - มีสิทธิ์เข้าถึง repository หรือไม่
+    echo.
+)
+
+pause
+
