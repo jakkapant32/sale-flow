@@ -1,0 +1,10 @@
+# Ignore files for deployment
+.env
+.env.local
+*.log
+database/
+scripts/
+*.bat
+*.md
+!README.md
+

@@ -1,0 +1,72 @@
+═══════════════════════════════════════════════════════════
+  วิธีติดตั้งฐานข้อมูล CRM (แนะนำสำหรับคุณ)
+═══════════════════════════════════════════════════════════
+
+❌ ปัญหา: ERR_CONNECTION_REFUSED
+หมายความว่า Web Server ยังไม่ได้เริ่มทำงาน
+
+═══════════════════════════════════════════════════════════
+  วิธีที่แนะนำ: ใช้ pgAdmin (ไม่ต้องติดตั้ง Web Server)
+═══════════════════════════════════════════════════════════
+
+ขั้นตอน:
+1. ดาวน์โหลด pgAdmin: https://www.pgadmin.org/download/
+   เลือก "pgAdmin 4 for Windows"
+
+2. ติดตั้ง pgAdmin
+
+3. เปิด pgAdmin
+
+4. เชื่อมต่อฐานข้อมูล:
+   - คลิกขวาที่ "Servers" → "Create" → "Server"
+   - General Tab → Name: Render CRM
+   - Connection Tab:
+     * Host: dpg-d51mhfggjchc73enlnfg-a.oregon-postgres.render.com
+     * Port: 5432
+     * Database: smartsales_db_tp3c
+     * Username: smartsales_user
+     * Password: p0vTgAP02R8i8hKXjPF5uWpwDsE1nZr4
+     * Save Password: ✓ (ติ๊กถูก)
+   - กด "Save"
+
+5. รันสคริปต์:
+   - ขยาย Servers → Render CRM → Databases → smartsales_db_tp3c
+   - คลิกขวาที่ smartsales_db_tp3c → "Query Tool"
+   - เปิดไฟล์: database/reset_and_install.sql
+   - Select All (Ctrl+A) → Copy (Ctrl+C)
+   - Paste ลงใน Query Tool (Ctrl+V)
+   - กด F5 หรือคลิกปุ่ม Execute (▶)
+
+6. รอจนเสร็จ (จะเห็นข้อความ "Query returned successfully")
+
+✅ เสร็จแล้ว! ตารางทั้งหมดถูกสร้างเรียบร้อยแล้ว
+
+═══════════════════════════════════════════════════════════
+  ข้อมูลเข้าสู่ระบบ (หลังจากติดตั้ง Web Server แล้ว)
+═══════════════════════════════════════════════════════════
+
+Username: admin
+Password: admin123
+
+⚠️ ควรเปลี่ยนรหัสผ่านทันทีหลังเข้าสู่ระบบครั้งแรก!
+
+═══════════════════════════════════════════════════════════
+  ถ้าต้องการรันระบบบน Localhost
+═══════════════════════════════════════════════════════════
+
+ต้องติดตั้ง Web Server (XAMPP/WAMP) เพื่อรัน PHP
+
+วิธีที่ 1: XAMPP
+- ดาวน์โหลด: https://www.apachefriends.org/download.html
+- ติดตั้ง → เปิด XAMPP Control Panel → Start Apache
+- Copy โฟลเดอร์ SalesFlow ไปที่ C:\xampp\htdocs\
+- เปิดเบราว์เซอร์: http://localhost/SalesFlow/
+
+วิธีที่ 2: WAMP
+- ดาวน์โหลด: https://www.wampserver.com/en/
+- ติดตั้ง → เปิด WAMP → รอจนไอคอนเป็นสีเขียว
+- Copy โฟลเดอร์ SalesFlow ไปที่ C:\wamp64\www\
+- เปิดเบราว์เซอร์: http://localhost/SalesFlow/
+
+═══════════════════════════════════════════════════════════
+

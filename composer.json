@@ -1,0 +1,16 @@
+{
+    "name": "salesflow/crm",
+    "description": "SalesFlow CRM System",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "ext-pdo": "*",
+        "ext-pdo_pgsql": "*"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2"
+        }
+    }
+}
+
