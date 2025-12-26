@@ -1,8 +1,11 @@
-<?php 
-require_once 'config/functions.php';
+<?php
+// Start session before any output
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+require_once 'config/functions.php';
+
 // ตรวจสอบว่าเป็น admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header('Location: dashboard.php');
