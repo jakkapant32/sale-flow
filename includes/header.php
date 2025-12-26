@@ -23,6 +23,9 @@ if (!isset($_SESSION['user_id']) && !in_array($currentPage, $publicPages)) {
             <li><a href="activities.php" class="<?= basename($_SERVER['PHP_SELF']) == 'activities.php' ? 'active' : '' ?>"><i class="fas fa-calendar-check"></i> กิจกรรม</a></li>
             <li><a href="products.php" class="<?= basename($_SERVER['PHP_SELF']) == 'products.php' ? 'active' : '' ?>"><i class="fas fa-box"></i> สินค้า</a></li>
             <li><a href="orders.php" class="<?= basename($_SERVER['PHP_SELF']) == 'orders.php' ? 'active' : '' ?>"><i class="fas fa-shopping-cart"></i> คำสั่งซื้อ</a></li>
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <li><a href="admin.php" class="<?= basename($_SERVER['PHP_SELF']) == 'admin.php' ? 'active' : '' ?>"><i class="fas fa-user-shield"></i> จัดการผู้ใช้</a></li>
+            <?php endif; ?>
             <li><a href="#" class="btn-primary" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</a></li>
             <script>
                 function logout() {

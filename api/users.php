@@ -7,6 +7,11 @@ function handleUsers($method, $id, $input) {
     global $db;
     $db = getDB();
     
+    // ตรวจสอบว่าเป็น admin เท่านั้น (ยกเว้น GET me สำหรับดูข้อมูลตัวเอง)
+    if ($id !== 'me') {
+        checkAdmin();
+    }
+    
     switch ($method) {
         case 'GET':
             if ($id) {
@@ -47,6 +52,7 @@ function getUsers($input) {
     $pagination = getPaginationParams($input);
     $search = isset($input['search']) ? sanitizeInput($input['search']) : '';
     $status = isset($input['status']) ? sanitizeInput($input['status']) : '';
+    $role = isset($input['role']) ? sanitizeInput($input['role']) : '';
     
     $where = [];
     $params = [];
@@ -59,6 +65,11 @@ function getUsers($input) {
     if (!empty($status)) {
         $where[] = "status = :status";
         $params['status'] = $status;
+    }
+    
+    if (!empty($role)) {
+        $where[] = "role = :role";
+        $params['role'] = $role;
     }
     
     $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';

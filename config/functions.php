@@ -79,5 +79,63 @@ function getPaginationParams($input) {
         'offset' => $offset
     ];
 }
+
+/**
+ * Check if user is admin
+ */
+function checkAdmin() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['user_id'])) {
+        sendError('Unauthorized', 401);
+    }
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        sendError('Access denied. Admin privileges required.', 403);
+    }
+    return $_SESSION['user_id'];
+}
+
+/**
+ * Check if user has required role
+ */
+function requireRole($requiredRole) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['user_id'])) {
+        sendError('Unauthorized', 401);
+    }
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== $requiredRole) {
+        sendError('Access denied. Insufficient privileges.', 403);
+    }
+    return $_SESSION['user_id'];
+}
+
+/**
+ * Check if user is admin or owner of resource
+ */
+function checkAdminOrOwner($resourceUserId) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['user_id'])) {
+        sendError('Unauthorized', 401);
+    }
+    if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['user_id'] !== $resourceUserId)) {
+        sendError('Access denied', 403);
+    }
+    return $_SESSION['user_id'];
+}
+
+/**
+ * Check if user is admin (for non-API usage, returns boolean)
+ */
+function isAdmin() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}
 ?>
 
