@@ -26,11 +26,11 @@ class Database {
             $this->password = $url['pass'] ?? '';
         } else {
             // Fallback to individual environment variables
-            $this->host = getenv('DB_HOST') ?: 'dpg-d51mhfggjchc73enlnfg-a.oregon-postgres.render.com';
+            $this->host = getenv('DB_HOST') ?: 'dpg-d5mvt9mr433s739e5itg-a.oregon-postgres.render.com';
             $this->port = getenv('DB_PORT') ?: '5432';
-            $this->dbname = getenv('DB_NAME') ?: 'smartsales_db_tp3c';
-            $this->username = getenv('DB_USER') ?: 'smartsales_user';
-            $this->password = getenv('DB_PASSWORD') ?: 'p0vTgAP02R8i8hKXjPF5uWpwDsE1nZr4';
+            $this->dbname = getenv('DB_NAME') ?: 'salesflow_jj90';
+            $this->username = getenv('DB_USER') ?: 'salesflow_user';
+            $this->password = getenv('DB_PASSWORD') ?: 'NChIixpe8r33jC0rDjlp7WrgVc7Tdusv';
         }
         
         try {
