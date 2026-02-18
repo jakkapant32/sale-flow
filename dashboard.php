@@ -1,4 +1,4 @@
-<?php require_once 'includes/header.php'; ?>
+<?php require_once 'includes/auth_check.php'; ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <?php include 'includes/header.php'; ?>
+    <?php require_once 'includes/header.php'; ?>
     
     <div class="main-content">
         <div class="page-header">

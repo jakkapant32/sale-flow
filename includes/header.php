@@ -1,25 +1,14 @@
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-// Only redirect if accessing protected pages
-$publicPages = ['index.php', 'register.php', 'login.php'];
-$currentPage = basename($_SERVER['PHP_SELF']);
-if (!isset($_SESSION['user_id']) && !in_array($currentPage, $publicPages)) {
-    header('Location: login.php');
-    exit();
-}
-?>
+<?php require_once __DIR__ . '/auth_check.php'; ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <header>
     <nav>
         <div class="nav-brand">
             <a href="dashboard.php" class="logo"><i class="fas fa-chart-line"></i> SalesFlow</a>
-            <button class="hamburger-btn" id="hamburgerBtn" aria-label="เปิดเมนู">
+            <button class="hamburger-btn" type="button" aria-label="เปิดเมนู">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
-        <ul class="nav-links" id="navLinks">
+        <ul class="nav-links">
             <li><a href="dashboard.php" class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>"><i class="fas fa-chart-pie"></i> แดชบอร์ด</a></li>
             <li><a href="customers.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customers.php' ? 'active' : '' ?>"><i class="fas fa-users"></i> ลูกค้า</a></li>
             <li><a href="deals.php" class="<?= basename($_SERVER['PHP_SELF']) == 'deals.php' ? 'active' : '' ?>"><i class="fas fa-handshake"></i> ดีล</a></li>
@@ -38,36 +27,35 @@ if (!isset($_SESSION['user_id']) && !in_array($currentPage, $publicPages)) {
             </script>
         </ul>
     </nav>
-    <div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+    <div class="nav-overlay" aria-hidden="true"></div>
 </header>
 <script>
 (function() {
-    var btn = document.getElementById('hamburgerBtn');
-    var nav = document.getElementById('navLinks');
-    var overlay = document.getElementById('navOverlay');
-    if (btn && nav) {
+    document.querySelectorAll('header').forEach(function(header) {
+        var btn = header.querySelector('.hamburger-btn');
+        var nav = header.querySelector('.nav-links');
+        var overlay = header.querySelector('.nav-overlay');
+        if (!btn || !nav) return;
         function toggleMenu() {
             nav.classList.toggle('open');
-            overlay.classList.toggle('show');
+            if (overlay) overlay.classList.toggle('show');
             document.body.classList.toggle('menu-open');
             btn.setAttribute('aria-label', nav.classList.contains('open') ? 'ปิดเมนู' : 'เปิดเมนู');
-            btn.querySelector('i').className = nav.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
+            var icon = btn.querySelector('i');
+            if (icon) icon.className = nav.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
         }
         function closeMenu() {
             nav.classList.remove('open');
-            overlay.classList.remove('show');
+            if (overlay) overlay.classList.remove('show');
             document.body.classList.remove('menu-open');
-            if (btn) {
-                btn.setAttribute('aria-label', 'เปิดเมนู');
-                btn.querySelector('i').className = 'fas fa-bars';
-            }
+            btn.setAttribute('aria-label', 'เปิดเมนู');
+            var icon = btn.querySelector('i');
+            if (icon) icon.className = 'fas fa-bars';
         }
         btn.addEventListener('click', toggleMenu);
         if (overlay) overlay.addEventListener('click', closeMenu);
-        nav.querySelectorAll('a').forEach(function(a) {
-            a.addEventListener('click', closeMenu);
-        });
-    }
+        nav.querySelectorAll('a').forEach(function(a) { a.addEventListener('click', closeMenu); });
+    });
 })();
 </script>
 

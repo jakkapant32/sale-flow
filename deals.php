@@ -1,4 +1,4 @@
-<?php require_once 'includes/header.php'; ?>
+<?php require_once 'includes/auth_check.php'; ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-    <?php include 'includes/header.php'; ?>
+    <?php require_once 'includes/header.php'; ?>
     
     <div class="main-content">
         <div class="page-header">

@@ -11,7 +11,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header('Location: dashboard.php');
     exit();
 }
-require_once 'includes/header.php'; 
+require_once 'includes/auth_check.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -22,7 +22,7 @@ require_once 'includes/header.php';
     <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-    <?php include 'includes/header.php'; ?>
+    <?php require_once 'includes/header.php'; ?>
     
     <div class="main-content">
         <div class="page-header">
