@@ -20,13 +20,21 @@ class Database {
         if (getenv('DATABASE_URL')) {
             $url = parse_url(getenv('DATABASE_URL'));
             $this->host = $url['host'] ?? '';
+            // Render internal host (dpg-xxx-a) needs full domain to resolve externally
+            if (preg_match('/^dpg-[a-z0-9]+-a$/', $this->host)) {
+                $this->host .= '.oregon-postgres.render.com';
+            }
             $this->port = $url['port'] ?? '5432';
             $this->dbname = ltrim($url['path'] ?? '', '/');
             $this->username = $url['user'] ?? '';
             $this->password = $url['pass'] ?? '';
         } else {
             // Fallback to individual environment variables (new DB: salesflow-db)
-            $this->host = getenv('DB_HOST') ?: 'dpg-d6ai51i48b3s73bb4q5g-a.oregon-postgres.render.com';
+            $host = getenv('DB_HOST') ?: 'dpg-d6ai51i48b3s73bb4q5g-a.oregon-postgres.render.com';
+            if (preg_match('/^dpg-[a-z0-9]+-a$/', $host)) {
+                $host .= '.oregon-postgres.render.com';
+            }
+            $this->host = $host;
             $this->port = getenv('DB_PORT') ?: '5432';
             $this->dbname = getenv('DB_NAME') ?: 'salesflow_0s9k';
             $this->username = getenv('DB_USER') ?: 'salesflow_user';
@@ -34,7 +42,8 @@ class Database {
         }
         
         try {
-            $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->dbname}";
+            // sslmode=require fixes "SSL connection has been closed unexpectedly" with Render PostgreSQL
+            $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->dbname};sslmode=require";
             $this->connection = new PDO($dsn, $this->username, $this->password, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
