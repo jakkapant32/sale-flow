@@ -119,22 +119,22 @@
         
         function displayStats(data) {
             const stats = [
-                { title: 'ลูกค้าทั้งหมด', value: data.total_customers || 0, icon: 'fa-users', color: '#2563eb' },
-                { title: 'ดีลที่เปิดอยู่', value: data.total_deals || 0, icon: 'fa-handshake', color: '#10b981' },
-                { title: 'มูลค่าดีลทั้งหมด', value: formatCurrency(data.total_deal_value || 0), icon: 'fa-dollar-sign', color: '#f59e0b' },
-                { title: 'รายได้ทั้งหมด', value: formatCurrency(data.total_revenue || 0), icon: 'fa-chart-line', color: '#2563eb' },
-                { title: 'ค่าคอมมิชชั่นรวม', value: formatCurrency(data.total_commission || 0), icon: 'fa-percent', color: '#ef4444' },
-                { title: 'รายได้สุทธิรวม', value: formatCurrency(data.total_net_income || 0), icon: 'fa-coins', color: '#10b981' },
-                { title: 'กิจกรรมค้าง', value: data.pending_activities || 0, icon: 'fa-calendar-check', color: '#8b5cf6' },
-                { title: 'กิจกรรมเกินกำหนด', value: data.overdue_activities || 0, icon: 'fa-exclamation-triangle', color: '#ef4444' }
+                { title: 'ลูกค้าทั้งหมด', value: data.total_customers || 0, icon: 'fa-users', color: '#2563eb', link: 'customers.php' },
+                { title: 'ดีลที่เปิดอยู่', value: data.total_deals || 0, icon: 'fa-handshake', color: '#10b981', link: 'deals.php' },
+                { title: 'มูลค่าดีลทั้งหมด', value: formatCurrency(data.total_deal_value || 0), icon: 'fa-dollar-sign', color: '#f59e0b', link: 'deals.php' },
+                { title: 'รายได้ทั้งหมด', value: formatCurrency(data.total_revenue || 0), icon: 'fa-chart-line', color: '#2563eb', link: 'orders.php' },
+                { title: 'ค่าคอมมิชชั่นรวม', value: formatCurrency(data.total_commission || 0), icon: 'fa-percent', color: '#ef4444', link: 'orders.php' },
+                { title: 'รายได้สุทธิรวม', value: formatCurrency(data.total_net_income || 0), icon: 'fa-coins', color: '#10b981', link: 'orders.php' },
+                { title: 'กิจกรรมค้าง', value: data.pending_activities || 0, icon: 'fa-calendar-check', color: '#8b5cf6', link: 'activities.php' },
+                { title: 'กิจกรรมเกินกำหนด', value: data.overdue_activities || 0, icon: 'fa-exclamation-triangle', color: '#ef4444', link: 'activities.php' }
             ];
             
             const html = stats.map(stat => `
-                <div class="stat-card" style="border-left-color: ${stat.color}">
+                <a href="${stat.link}" class="stat-card stat-card-link" style="border-left-color: ${stat.color}">
                     <i class="fas ${stat.icon} stat-icon" style="color: ${stat.color}"></i>
                     <h3>${stat.value}</h3>
                     <p>${stat.title}</p>
-                </div>
+                </a>
             `).join('');
             
             document.getElementById('statsContainer').innerHTML = html;

@@ -331,6 +331,18 @@ table tr:hover {
     box-shadow: var(--shadow-lg);
 }
 
+/* Clickable stat card (link) */
+.stat-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.stat-card-link:hover {
+    color: inherit;
+}
+
 .stat-card .stat-icon {
     font-size: 2.5rem;
     color: var(--accent-color);
