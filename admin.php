@@ -55,7 +55,7 @@ require_once 'includes/header.php';
         </div>
         
         <div class="card">
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="search-filter-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
                 <input type="text" id="searchInput" placeholder="ค้นหาผู้ใช้..." style="flex: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem;">
                 <select id="roleFilter" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem;">
                     <option value="">ทุกบทบาท</option>

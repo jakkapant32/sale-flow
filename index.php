@@ -338,10 +338,6 @@
         }
 
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
             .hero h1 {
                 font-size: 2rem;
             }
@@ -361,14 +357,48 @@
     <!-- Header -->
     <header>
         <nav>
-            <a href="index.php" class="logo"><i class="fas fa-chart-line"></i> SalesFlow</a>
-            <ul class="nav-links">
+            <div class="nav-brand">
+                <a href="index.php" class="logo"><i class="fas fa-chart-line"></i> SalesFlow</a>
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="เปิดเมนู">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <ul class="nav-links" id="navLinks">
                 <li><a href="#features">ฟีเจอร์</a></li>
                 <li><a href="#about">เกี่ยวกับเรา</a></li>
                 <li><a href="login.php" class="btn-primary">เข้าสู่ระบบ</a></li>
             </ul>
         </nav>
+        <div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
     </header>
+    <script>
+    (function() {
+        var btn = document.getElementById('hamburgerBtn');
+        var nav = document.getElementById('navLinks');
+        var overlay = document.getElementById('navOverlay');
+        if (btn && nav) {
+            function toggleMenu() {
+                nav.classList.toggle('open');
+                overlay.classList.toggle('show');
+                document.body.classList.toggle('menu-open');
+                btn.setAttribute('aria-label', nav.classList.contains('open') ? 'ปิดเมนู' : 'เปิดเมนู');
+                btn.querySelector('i').className = nav.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
+            }
+            function closeMenu() {
+                nav.classList.remove('open');
+                overlay.classList.remove('show');
+                document.body.classList.remove('menu-open');
+                if (btn) {
+                    btn.setAttribute('aria-label', 'เปิดเมนู');
+                    btn.querySelector('i').className = 'fas fa-bars';
+                }
+            }
+            btn.addEventListener('click', toggleMenu);
+            if (overlay) overlay.addEventListener('click', closeMenu);
+            nav.querySelectorAll('a').forEach(function(a) { a.addEventListener('click', closeMenu); });
+        }
+    })();
+    </script>
 
     <!-- Hero Section -->
     <section class="hero">

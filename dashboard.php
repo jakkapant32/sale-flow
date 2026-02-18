@@ -35,7 +35,7 @@
             </div>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="dashboard-two-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">ดีลล่าสุด</h2>
