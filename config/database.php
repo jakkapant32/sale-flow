@@ -20,8 +20,10 @@ class Database {
         if (getenv('DATABASE_URL')) {
             $url = parse_url(getenv('DATABASE_URL'));
             $this->host = $url['host'] ?? '';
-            // Render internal host (dpg-xxx-a) needs full domain to resolve externally
-            if (preg_match('/^dpg-[a-z0-9]+-a$/', $this->host)) {
+            // On Render: use Internal URL as-is (dpg-xxx-a resolves on private network)
+            // Off Render: append domain so short hostname resolves
+            $onRender = getenv('RENDER') === 'true' || getenv('RENDER_SERVICE_NAME');
+            if (!$onRender && preg_match('/^dpg-[a-z0-9]+-a$/', $this->host)) {
                 $this->host .= '.oregon-postgres.render.com';
             }
             $this->port = $url['port'] ?? '5432';
@@ -31,7 +33,8 @@ class Database {
         } else {
             // Fallback to individual environment variables (new DB: salesflow-db)
             $host = getenv('DB_HOST') ?: 'dpg-d6ai51i48b3s73bb4q5g-a.oregon-postgres.render.com';
-            if (preg_match('/^dpg-[a-z0-9]+-a$/', $host)) {
+            $onRender = getenv('RENDER') === 'true' || getenv('RENDER_SERVICE_NAME');
+            if (!$onRender && preg_match('/^dpg-[a-z0-9]+-a$/', $host)) {
                 $host .= '.oregon-postgres.render.com';
             }
             $this->host = $host;
@@ -41,16 +44,30 @@ class Database {
             $this->password = getenv('DB_PASSWORD') ?: 'fGlCkhwQLud9M7rPo3BglnwyRQaKtiYm';
         }
         
-        try {
-            // sslmode=require fixes "SSL connection has been closed unexpectedly" with Render PostgreSQL
-            $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->dbname};sslmode=require";
-            $this->connection = new PDO($dsn, $this->username, $this->password, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]);
-        } catch(PDOException $e) {
-            error_log("Database Connection Error: " . $e->getMessage());
+        $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->dbname};sslmode=require;connect_timeout=30";
+        $lastException = null;
+        $maxAttempts = 3;
+
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            try {
+                $this->connection = new PDO($dsn, $this->username, $this->password, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]);
+                $lastException = null;
+                break;
+            } catch (PDOException $e) {
+                $lastException = $e;
+                if ($attempt < $maxAttempts) {
+                    sleep(2); // Wait for DB cold start (Render free tier spins down)
+                }
+            }
+        }
+
+        if ($lastException !== null) {
+            $e = $lastException;
+            error_log("Database Connection Error (after {$maxAttempts} attempts): " . $e->getMessage());
             
             // ตรวจสอบว่าเป็นปัญหา driver หรือไม่
             $errorMessage = $e->getMessage();
