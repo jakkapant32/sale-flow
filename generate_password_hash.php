@@ -14,3 +14,9 @@ echo "SQL UPDATE statement:\n";
 echo "UPDATE users SET password_hash = '$hash' WHERE username = 'admin';\n";
 ?>
 
+
+
+
+
+
+

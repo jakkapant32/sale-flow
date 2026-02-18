@@ -86,3 +86,7 @@ psql -h dpg-d5mvt9mr433s739e5itg-a.oregon-postgres.render.com -U salesflow_user 
 - **External Database URL** ใช้สำหรับการเชื่อมต่อจากเครื่อง local หรือเครื่องอื่น
 - Password ควรเก็บเป็นความลับและไม่ควร commit ลง Git
 
+
+
+
+

@@ -25,12 +25,12 @@ class Database {
             $this->username = $url['user'] ?? '';
             $this->password = $url['pass'] ?? '';
         } else {
-            // Fallback to individual environment variables
-            $this->host = getenv('DB_HOST') ?: 'dpg-d5mvt9mr433s739e5itg-a.oregon-postgres.render.com';
+            // Fallback to individual environment variables (new DB: salesflow-db)
+            $this->host = getenv('DB_HOST') ?: 'dpg-d6ai51i48b3s73bb4q5g-a.oregon-postgres.render.com';
             $this->port = getenv('DB_PORT') ?: '5432';
-            $this->dbname = getenv('DB_NAME') ?: 'salesflow_jj90';
+            $this->dbname = getenv('DB_NAME') ?: 'salesflow_0s9k';
             $this->username = getenv('DB_USER') ?: 'salesflow_user';
-            $this->password = getenv('DB_PASSWORD') ?: 'NChIixpe8r33jC0rDjlp7WrgVc7Tdusv';
+            $this->password = getenv('DB_PASSWORD') ?: 'fGlCkhwQLud9M7rPo3BglnwyRQaKtiYm';
         }
         
         try {

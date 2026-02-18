@@ -66,6 +66,9 @@ CREATE TABLE IF NOT EXISTS deals (
     customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
     product_id UUID REFERENCES products(id) ON DELETE SET NULL,
     amount DECIMAL(15, 2) NOT NULL,
+    commission_rate DECIMAL(5, 2) DEFAULT 7.00,
+    commission_amount DECIMAL(15, 2) DEFAULT 0,
+    net_income DECIMAL(15, 2) DEFAULT 0,
     currency VARCHAR(10) DEFAULT 'THB',
     stage VARCHAR(50) DEFAULT 'prospecting',
     probability INTEGER DEFAULT 0 CHECK (probability >= 0 AND probability <= 100),
@@ -111,8 +114,12 @@ CREATE TABLE IF NOT EXISTS orders (
     status VARCHAR(50) DEFAULT 'pending',
     subtotal DECIMAL(15, 2) NOT NULL,
     tax DECIMAL(15, 2) DEFAULT 0,
+    tax_rate DECIMAL(5, 2) DEFAULT 7.00,
     discount DECIMAL(15, 2) DEFAULT 0,
     total_amount DECIMAL(15, 2) NOT NULL,
+    commission_rate DECIMAL(5, 2) DEFAULT 7.00,
+    commission_amount DECIMAL(15, 2) DEFAULT 0,
+    net_income DECIMAL(15, 2) DEFAULT 0,
     currency VARCHAR(10) DEFAULT 'THB',
     payment_status VARCHAR(50) DEFAULT 'unpaid',
     payment_method VARCHAR(50),
@@ -146,6 +153,8 @@ CREATE INDEX IF NOT EXISTS idx_activities_deal_id ON activities(deal_id);
 CREATE INDEX IF NOT EXISTS idx_activities_due_date ON activities(due_date);
 CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id);
 CREATE INDEX IF NOT EXISTS idx_orders_order_date ON orders(order_date);
+CREATE INDEX IF NOT EXISTS idx_orders_commission_rate ON orders(commission_rate);
+CREATE INDEX IF NOT EXISTS idx_deals_commission_rate ON deals(commission_rate);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
