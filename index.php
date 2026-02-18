@@ -358,10 +358,10 @@
     <header>
         <nav>
             <div class="nav-brand">
-                <a href="index.php" class="logo"><i class="fas fa-chart-line"></i> SalesFlow</a>
                 <button class="hamburger-btn" id="hamburgerBtn" aria-label="เปิดเมนู">
                     <i class="fas fa-bars"></i>
                 </button>
+                <a href="index.php" class="logo"><i class="fas fa-chart-line"></i> SalesFlow</a>
             </div>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#features">ฟีเจอร์</a></li>

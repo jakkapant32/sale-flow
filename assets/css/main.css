@@ -562,13 +562,13 @@ body.menu-open {
 
     .hamburger-btn {
         display: block;
-        margin-left: auto;
+        margin-right: 0;
     }
 
     .nav-links {
         position: fixed;
         top: 0;
-        right: -100%;
+        left: -100%;
         width: 280px;
         max-width: 85vw;
         height: 100vh;
@@ -577,14 +577,14 @@ body.menu-open {
         align-items: stretch;
         gap: 0;
         padding: 5rem 1rem 1.5rem;
-        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
         z-index: 1001;
-        transition: right 0.3s ease;
+        transition: left 0.3s ease;
         overflow-y: auto;
     }
 
     .nav-links.open {
-        right: 0;
+        left: 0;
     }
 
     .nav-links li {

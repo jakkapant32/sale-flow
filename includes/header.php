@@ -3,10 +3,10 @@
 <header>
     <nav>
         <div class="nav-brand">
-            <a href="dashboard.php" class="logo"><i class="fas fa-chart-line"></i> SalesFlow</a>
             <button class="hamburger-btn" type="button" aria-label="เปิดเมนู">
                 <i class="fas fa-bars"></i>
             </button>
+            <a href="dashboard.php" class="logo"><i class="fas fa-chart-line"></i> SalesFlow</a>
         </div>
         <ul class="nav-links">
             <li><a href="dashboard.php" class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>"><i class="fas fa-chart-pie"></i> แดชบอร์ด</a></li>
