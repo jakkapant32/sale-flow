@@ -5,12 +5,10 @@
     "require": {
         "php": ">=8.0",
         "ext-pdo": "*",
-        "ext-pdo_pgsql": "*"
+        "ext-pdo_pgsql": "*",
+        "phpoffice/phpspreadsheet": "^1.29"
     },
     "config": {
-        "platform": {
-            "php": "8.2"
-        }
+        "platform": {"php": "8.2"}
     }
 }
-

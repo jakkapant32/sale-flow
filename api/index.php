@@ -92,6 +92,11 @@ try {
             handleUsers($method, $id, $input);
             break;
             
+        case 'import':
+            require_once __DIR__ . '/import.php';
+            handleImport($method, $input, $_FILES ?? []);
+            break;
+            
         default:
             http_response_code(404);
             echo json_encode(['error' => 'Resource not found']);

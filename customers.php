@@ -13,7 +13,10 @@
     <div class="main-content">
         <div class="page-header">
             <h1>จัดการลูกค้า</h1>
-            <button class="btn-primary" onclick="openCustomerModal()">+ เพิ่มลูกค้าใหม่</button>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn-primary" onclick="openCustomerModal()">+ เพิ่มลูกค้าใหม่</button>
+                <button class="btn-secondary" onclick="document.getElementById('importCustomerModal').classList.add('show')">นำเข้าจากไฟล์ (CSV/Excel)</button>
+            </div>
         </div>
         
         <div class="card">
@@ -102,6 +105,28 @@
                 <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <button type="button" class="btn-secondary" onclick="closeCustomerModal()">ยกเลิก</button>
                     <button type="submit" class="btn-primary">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Import Modal -->
+    <div id="importCustomerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>นำเข้าลูกค้าจากไฟล์</h2>
+                <button class="close-btn" onclick="document.getElementById('importCustomerModal').classList.remove('show')">&times;</button>
+            </div>
+            <p style="margin-bottom: 1rem; color: var(--text-secondary);">รองรับ CSV, XLSX, XLS — แถวแรกต้องเป็นหัวคอลัมน์ (เช่น *Customer Name, *Phone, *Email, *Address)</p>
+            <form id="importCustomerForm">
+                <div class="form-group">
+                    <label>เลือกไฟล์</label>
+                    <input type="file" id="importCustomerFile" accept=".csv,.xlsx,.xls" required>
+                </div>
+                <div id="importCustomerResult" style="display: none; margin: 1rem 0;"></div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('importCustomerModal').classList.remove('show')">ปิด</button>
+                    <button type="submit" class="btn-primary" id="importCustomerBtn">นำเข้า</button>
                 </div>
             </form>
         </div>
@@ -280,6 +305,42 @@
                     });
                 });
             }
+            
+            // Import form
+            document.getElementById('importCustomerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var fileInput = document.getElementById('importCustomerFile');
+                var resultDiv = document.getElementById('importCustomerResult');
+                var btn = document.getElementById('importCustomerBtn');
+                if (!fileInput.files.length) return;
+                var fd = new FormData();
+                fd.append('type', 'customers');
+                fd.append('file', fileInput.files[0]);
+                btn.disabled = true;
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = 'กำลังนำเข้า...';
+                resultDiv.className = 'alert alert-info';
+                fetch(API_BASE + '/import', { method: 'POST', body: fd })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.error) {
+                            resultDiv.className = 'alert alert-error';
+                            resultDiv.innerHTML = data.error;
+                        } else {
+                            resultDiv.className = 'alert alert-success';
+                            resultDiv.innerHTML = 'นำเข้าสำเร็จ ' + data.imported + ' รายการ, ข้าม ' + data.skipped + ' รายการ.' +
+                                (data.errors && data.errors.length ? '<br><small>' + data.errors.slice(0, 5).join('<br>') + (data.errors.length > 5 ? ' ...' : '') + '</small>' : '');
+                            loadCustomers();
+                            fileInput.value = '';
+                        }
+                        btn.disabled = false;
+                    })
+                    .catch(function(err) {
+                        resultDiv.className = 'alert alert-error';
+                        resultDiv.innerHTML = 'เกิดข้อผิดพลาด: ' + err.message;
+                        btn.disabled = false;
+                    });
+            });
             
             // Load initial data
             loadCustomers();
