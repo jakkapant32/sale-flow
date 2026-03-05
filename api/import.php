@@ -89,7 +89,7 @@ function readCsv($path) {
 
 function readExcel($path, $ext) {
     if (!is_file(__DIR__ . '/../vendor/autoload.php')) {
-        sendError('Excel support requires Composer. Run: composer install', 503);
+        sendError('การนำเข้า Excel ต้องติดตั้ง Composer ก่อน: เปิด Command Prompt/PowerShell ที่โฟลเดอร์โปรเจกต์ แล้วรันคำสั่ง composer install (ดาวน์โหลด Composer ได้ที่ https://getcomposer.org) หรือใช้ไฟล์ CSV แทนได้ทันที', 503);
     }
     require_once __DIR__ . '/../vendor/autoload.php';
     

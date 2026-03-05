@@ -30,6 +30,8 @@ temp/
 
 # Composer
 /vendor/
+composer.phar
+composer-setup.php
 
 # Node modules (if any)
 node_modules/
